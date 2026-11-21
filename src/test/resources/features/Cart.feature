@@ -1,5 +1,7 @@
+
 Feature: Cart functionality
 
+  @TC04
   Scenario: Add product to cart and verify product
     Given user opens the SauceDemo application
     When user enters valid username and password

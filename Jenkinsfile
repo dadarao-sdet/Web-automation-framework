@@ -1,6 +1,16 @@
 
 pipeline {
-    agent any
+    agent {
+        label 'windows-chrome'
+    }
+
+    parameters {
+        string(
+            name: 'TEST_CASE',
+            defaultValue: 'ALL',
+            description: 'Enter ALL or Cucumber tag expression, e.g. @TC01 or @TC02'
+        )
+    }
 
     tools {
         jdk 'JDK21'
@@ -16,7 +26,19 @@ pipeline {
 
         stage('Run Automation Tests') {
             steps {
-                bat 'mvn -B clean test'
+                script {
+                    def selectedTags = params.TEST_CASE.trim()
+
+                    if (!selectedTags || selectedTags == 'ALL') {
+                        bat 'mvn -B clean test'
+                    } else {
+                        if (!(selectedTags ==~ /[A-Za-z0-9_@()!&| -]+/)) {
+                            error 'Invalid Cucumber tag expression'
+                        }
+
+                        bat "mvn -B clean test \"-Dcucumber.filter.tags=${selectedTags}\""
+                    }
+                }
             }
         }
     }
